@@ -14,7 +14,7 @@ from spotipy.oauth2 import SpotifyOAuth
 # ---------- Configuration (use environment variables, see instructions) ----------
 SPOTIPY_CLIENT_ID = os.environ.get("4071d45b11ad41b9ae76ba6522ed62f0")
 SPOTIPY_CLIENT_SECRET = os.environ.get("7bb101bf792447af90e32dba45fcfc93")
-SPOTIPY_REDIRECT_URI = os.environ.get("http://127.0.0.1:8888/callback")  # set to your app URL + /callback when deployed
+SPOTIPY_REDIRECT_URI = os.environ.get("https://random-playlist.onrender.com/callback")  # set to your app URL + /callback when deployed
 SCOPE = "user-library-read playlist-modify-private playlist-modify-public"
 
 # Secret key for Flask session cookies. Set via env var SECRET_KEY in production.
@@ -236,5 +236,5 @@ def create_playlist():
 
 # ---------- Run locally ----------
 if __name__ == "__main__":
-    # Local startup: Ensure SPOTIPY_REDIRECT_URI is set to "http://127.0.0.1:8888/callback"
+    # Local startup: Ensure SPOTIPY_REDIRECT_URI is set to "https://random-playlist.onrender.com/callback"
     app.run(host="0.0.0.0", port=8888, debug=True)
