@@ -237,6 +237,5 @@ def create_playlist():
 # ---------- Run locally ----------
 if __name__ == "__main__":
     # Local startup: Ensure SPOTIPY_REDIRECT_URI is set to "https://random-playlist.onrender.com/callback"
-    import os
-    port = int(os.environ.get("PORT", 8888))  # Use Render's port if set, or default to 8888
-    app.run(host="0.0.0.0", port=port, debug=True)
+    if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
