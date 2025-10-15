@@ -165,12 +165,13 @@ def callback():
     if error:
         return f"Error during authentication: {error}"
     try:
-    token_info = sp_oauth.get_access_token(code)
-except Exception as e:
-    print("⚠️ Error during get_access_token:", e)
-    return f"Spotify authentication failed: {e}"
+        token_info = sp_oauth.get_access_token(code)
+    except Exception as e:
+        print("⚠️ Error during get_access_token:", e)
+        return f"Spotify authentication failed: {e}"
     session["token_info"] = token_info
     return redirect(url_for("index"))
+
 
 @app.route("/logout")
 def logout():
