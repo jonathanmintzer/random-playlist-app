@@ -11,10 +11,10 @@ from flask import Flask, request, redirect, session, url_for, render_template_st
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-# ---------- Configuration (use environment variables, see instructions) ----------
-SPOTIPY_CLIENT_ID = os.environ.get("4071d45b11ad41b9ae76ba6522ed62f0")
-SPOTIPY_CLIENT_SECRET = os.environ.get("7bb101bf792447af90e32dba45fcfc93")
-SPOTIPY_REDIRECT_URI = os.environ.get("https://random-playlist.onrender.com/callback")  # set to your app URL + /callback when deployed
+# ---------- Configuration (use environment variables) ----------
+SPOTIPY_CLIENT_ID = os.environ.get("SPOTIPY_CLIENT_ID")
+SPOTIPY_CLIENT_SECRET = os.environ.get("SPOTIPY_CLIENT_SECRET")
+SPOTIPY_REDIRECT_URI = os.environ.get("SPOTIPY_REDIRECT_URI")  # e.g., https://random-playlist.onrender.com/callback
 SCOPE = "user-library-read playlist-modify-private playlist-modify-public"
 
 # Secret key for Flask session cookies. Set via env var SECRET_KEY in production.
