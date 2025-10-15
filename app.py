@@ -87,8 +87,8 @@ def fetch_random_liked_songs(sp, batch_size=500):
 
     print(f"Fetching {limit} liked songs starting at offset {offset} of {total}")
 
-    # Pull that window
-        tracks = []
+    # ✅ Fetch in batches of 50 (Spotify’s maximum per request)
+    tracks = []
     fetched = 0
     while fetched < limit:
         batch = min(50, limit - fetched)
@@ -104,6 +104,7 @@ def fetch_random_liked_songs(sp, batch_size=500):
                 "artists": artists
             })
         fetched += batch
+
     return tracks
 
     results = sp.current_user_saved_tracks(limit=50)
