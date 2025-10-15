@@ -66,11 +66,41 @@ def ensure_spotify_client():
         return None
     return spotipy.Spotify(auth=token_info["access_token"])
 
-def fetch_all_liked_songs(sp):
-    """Fetch liked songs and fill LIKED_SONGS_CACHE (simple, single-user)."""
-    global LIKED_SONGS_CACHE
-    if LIKED_SONGS_CACHE:
-        return LIKED_SONGS_CACHE
+def fetch_random_liked_songs(sp, batch_size=500):
+    """
+    Fetch a random sample of up to 'batch_size' liked songs.
+    This avoids downloading your entire library (which can time out on Render).
+    Each time you click Preview, we pick a new random starting point.
+    """
+    # How many liked tracks you have in total
+    meta = sp.current_user_saved_tracks(limit=1)
+    total = meta.get("total", 0) or 0
+
+    # If you have fewer than batch_size tracks, just start at 0
+    if total <= batch_size or total == 0:
+        offset = 0
+        limit = min(batch_size, total if total > 0 else 50)
+    else:
+        # Pick a random window start
+        offset = random.randint(0, total - batch_size)
+        limit = batch_size
+
+    print(f"Fetching {limit} liked songs starting at offset {offset} of {total}")
+
+    # Pull that window
+    results = sp.current_user_saved_tracks(limit=limit, offset=offset)
+    tracks = []
+    for item in results.get("items", []):
+        t = item.get("track")
+        if not t:
+            continue
+        artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
+        tracks.append({
+            "id": t.get("id"),
+            "name": t.get("name"),
+            "artists": artists
+        })
+    return tracks
 
     results = sp.current_user_saved_tracks(limit=50)
     all_tracks = []
@@ -195,7 +225,7 @@ def preview():
 
     sp = ensure_spotify_client()
     try:
-        songs = fetch_all_liked_songs(sp)
+        songs = fetch_random_liked_songs(sp, batch_size=500)
     except Exception as e:
         return f"Failed to fetch liked songs: {e}"
 
