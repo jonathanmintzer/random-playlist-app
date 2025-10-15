@@ -88,18 +88,22 @@ def fetch_random_liked_songs(sp, batch_size=500):
     print(f"Fetching {limit} liked songs starting at offset {offset} of {total}")
 
     # Pull that window
-    results = sp.current_user_saved_tracks(limit=limit, offset=offset)
-    tracks = []
-    for item in results.get("items", []):
-        t = item.get("track")
-        if not t:
-            continue
-        artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
-        tracks.append({
-            "id": t.get("id"),
-            "name": t.get("name"),
-            "artists": artists
-        })
+        tracks = []
+    fetched = 0
+    while fetched < limit:
+        batch = min(50, limit - fetched)
+        results = sp.current_user_saved_tracks(limit=batch, offset=offset + fetched)
+        for item in results.get("items", []):
+            t = item.get("track")
+            if not t:
+                continue
+            artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
+            tracks.append({
+                "id": t.get("id"),
+                "name": t.get("name"),
+                "artists": artists
+            })
+        fetched += batch
     return tracks
 
     results = sp.current_user_saved_tracks(limit=50)
