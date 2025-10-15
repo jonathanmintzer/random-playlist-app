@@ -20,6 +20,11 @@ SCOPE = "user-library-read playlist-modify-private playlist-modify-public"
 # Secret key for Flask session cookies. Set via env var SECRET_KEY in production.
 SECRET_KEY = os.environ.get("SECRET_KEY", os.urandom(24))
 
+print("🔍 Debug check:")
+print("Client ID:", SPOTIPY_CLIENT_ID)
+print("Redirect URI:", SPOTIPY_REDIRECT_URI)
+print("Secret Key present:", bool(SPOTIPY_CLIENT_SECRET))
+
 # ---------- Flask app setup ----------
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
