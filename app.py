@@ -32,6 +32,9 @@ app.secret_key = SECRET_KEY
 # ---------- Simple in-memory cache (for quick testing) ----------
 # NOTE: This is fine for personal testing. On a hosted service the filesystem may be ephemeral.
 LIKED_SONGS_CACHE = []   # list of dicts {id, name, artist_names, album_date, album_year}
+CACHED_RANDOM_BATCH = None
+CACHED_RANDOM_TIMESTAMP = 0
+CACHE_EXPIRY_SECONDS = 60  # 1 minute
 
 # ---------- Helper functions ----------
 def create_sp_oauth():
@@ -69,25 +72,29 @@ def ensure_spotify_client():
 def fetch_random_liked_songs(sp, batch_size=500):
     """
     Fetch a random sample of up to 'batch_size' liked songs.
-    This avoids downloading your entire library (which can time out on Render).
-    Each time you click Preview, we pick a new random starting point.
+    Caches the last random batch for 1 minute for speed.
     """
+    global CACHED_RANDOM_BATCH, CACHED_RANDOM_TIMESTAMP
+
+    now = time.time()
+    if CACHED_RANDOM_BATCH and (now - CACHED_RANDOM_TIMESTAMP < CACHE_EXPIRY_SECONDS):
+        print("✅ Using cached batch of random liked songs")
+        return CACHED_RANDOM_BATCH
+
     # How many liked tracks you have in total
     meta = sp.current_user_saved_tracks(limit=1)
     total = meta.get("total", 0) or 0
 
-    # If you have fewer than batch_size tracks, just start at 0
     if total <= batch_size or total == 0:
         offset = 0
         limit = min(batch_size, total if total > 0 else 50)
     else:
-        # Pick a random window start
         offset = random.randint(0, total - batch_size)
         limit = batch_size
 
     print(f"Fetching {limit} liked songs starting at offset {offset} of {total}")
 
-    # ✅ Fetch in batches of 50 (Spotify’s maximum per request)
+    # Fetch in batches of 50 (Spotify’s maximum per request)
     tracks = []
     fetched = 0
     while fetched < limit:
@@ -104,6 +111,11 @@ def fetch_random_liked_songs(sp, batch_size=500):
                 "artists": artists
             })
         fetched += batch
+
+    # ✅ Save to cache
+    CACHED_RANDOM_BATCH = tracks
+    CACHED_RANDOM_TIMESTAMP = now
+    print("💾 Cached random batch for next 5 minutes")
 
     return tracks
 
