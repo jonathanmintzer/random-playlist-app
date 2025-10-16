@@ -267,7 +267,12 @@ def create_playlist():
 
     user = sp.current_user()
     user_id = user.get("id")
-    today = date.today().strftime("%Y-%m-%d")
+    from datetime import datetime
+    import pytz
+
+    local_tz = pytz.timezone("America/New_York")  # change this if you're in another timezone
+    today = datetime.now(local_tz).strftime("%Y-%m-%d")
+
     playlist_name = f"{today} 🎲 Random Playlist"
 
     try:
