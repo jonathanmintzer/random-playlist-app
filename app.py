@@ -155,73 +155,71 @@ INDEX_HTML = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Random Spotify Playlist</title>
 <style>
-body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;background:#121212;color:#fff;text-align:center;}
-.container {max-width:400px;margin:auto;padding:20px;}
+/* ==== Base mobile-friendly styles ==== */
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;background:#121212;color:#fff;text-align:center;}
+.container{max-width:400px;margin:auto;padding:20px;}
 button,input[type=number]{font-size:1.1em;border-radius:10px;padding:10px 16px;margin-top:12px;border:none;}
 button{background-color:#1DB954;color:white;cursor:pointer;}
 button:hover{background-color:#1ed760;}
+/* Smaller, centered number input that won’t overflow on iPhone */
 input[type=number]{width:60%;max-width:180px;text-align:center;}
 a{color:#1DB954;text-decoration:none;}
-#loader {
-  display:flex;
+
+/* ==== Breakdancer loader (hidden by default) ==== */
+#loader{
+  display:none;               /* hidden until form submit */
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  margin-top:40px;
+  margin:15px 0;
 }
-
-.hidden { display:none; }
-
-#dancer {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  animation: fillDance 3s linear infinite;
+#dancer-outline{
+  fill:none;
+  stroke:#1DB954;
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:300;
+  stroke-dashoffset:300;
+  animation:fillOutline 2s ease-in-out infinite;
 }
-
-@keyframes fillDance {
-  0% { stroke-dashoffset: 400; }
-  50% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 400; }
+#dancer-fill{
+  fill:#1DB954;
+  opacity:0.1;
+  animation:fillColor 2s ease-in-out infinite;
+}
+@keyframes fillOutline{
+  0%   { stroke-dashoffset:300; opacity:0.3; }
+  50%  { stroke-dashoffset:0;   opacity:1;   }
+  100% { stroke-dashoffset:300; opacity:0.3; }
+}
+@keyframes fillColor{
+  0%   { opacity:0.1; }
+  50%  { opacity:0.5; }
+  100% { opacity:0.1; }
 }
 </style>
 </head>
 <body>
-<div id="loader" class="hidden">
-  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <!-- Simple breakdancer silhouette shape -->
-    <path id="dancer" d="M110,30 q-10,20 -20,0 q10,40 30,50 q-20,10 -25,40 q15,10 30,0 q0,20 20,25 q10,-15 0,-35 q15,5 25,-10 q-10,-15 -25,-10 q10,-20 -5,-35 q-20,5 -30,-25 z"
-      fill="none" stroke="#1DB954" stroke-width="4"/>
-  </svg>
-  <p style="margin-top:10px;color:#1DB954;">Getting your songs...</p>
-</div>
 <div class="container">
   <h2>🎵 Random Playlist Generator</h2>
+
+  <!-- Breakdancer loader (appears only after submit) -->
+  <div id="loader">
+    <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:90px;">
+      <!-- Filled silhouette -->
+      <path id="dancer-fill"
+            d="M70,15 l10,10 q10,10 0,20 l-5,10 q15,5 25,20 q-5,10 -15,10 q-5,10 5,20 q10,-5 15,-15 q5,15 -5,25 q-15,5 -25,-5 q-10,10 -20,0 q5,-10 10,-15 q-15,-10 -20,-30 q10,-10 20,-10 l-10,-10 q-10,-10 0,-20 z"/>
+      <!-- Outline that animates -->
+      <path id="dancer-outline"
+            d="M70,15 l10,10 q10,10 0,20 l-5,10 q15,5 25,20 q-5,10 -15,10 q-5,10 5,20 q10,-5 15,-15 q5,15 -5,25 q-15,5 -25,-5 q-10,10 -20,0 q5,-10 10,-15 q-15,-10 -20,-30 q10,-10 20,-10 l-10,-10 q-10,-10 0,-20 z"/>
+    </svg>
+    <p style="margin-top:5px;color:#1DB954;font-size:0.9em;">Fetching songs...</p>
+  </div>
+
   {% if not logged_in %}
     <p>Sign in to Spotify to begin.</p>
-    <a href="{{ url_for('login') }}"><button>Sign in with Spotify</button></a>
-  {% else %}
-    <form action="{{ url_for('preview') }}" method="post">
-      <label>Number of songs:</label><br>
-      <input type="number" name="size" min="1" value="10" required><br>
-      <button type="submit">Create Preview</button>
-    </form>
-    <p style="margin-top:20px;"><a href="{{ url_for('logout') }}">Log out</a></p>
-  {% endif %}
-  <p style="margin-top:18px;color:#aaa;">Tip: Fetching may take a moment.</p>
-</div>
-<script>
-  const form = document.querySelector("form");
-  const loader = document.getElementById("loader");
-
-  if (form) {
-    form.addEventListener("submit", () => {
-      loader.classList.remove("hidden");  // show loader
-    });
-  }
-</script>
-</body>
-</html>
-"""
+    <a hr
 
 PREVIEW_HTML = """
 <!doctype html>
