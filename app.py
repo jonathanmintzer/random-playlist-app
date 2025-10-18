@@ -368,14 +368,60 @@ SUCCESS_HTML = """
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Created</title>
+<title>Playlist Created</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;text-align:center;padding:30px;margin:0;}
-.container{max-width:420px;margin:0 auto;padding:0 16px;}
-a{color:#1DB954;text-decoration:none;word-wrap:break-word;overflow-wrap:break-word;}
-.link-box{background:#1e1e1e;padding:12px;border-radius:10px;text-align:left;}
-button{background-color:#1DB954;color:white;border:none;font-size:1.1em;border-radius:10px;padding:12px 20px;margin-top:20px;}
-button:hover{background-color:#1ed760;}
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#121212;color:#fff;text-align:center;
+  margin:0;padding:30px;
+}
+.container {
+  max-width:420px;
+  margin:0 auto;
+  padding:0 16px;
+}
+a {
+  color:#1DB954;text-decoration:none;
+  word-wrap:break-word;
+  overflow-wrap:break-word;
+}
+p {
+  margin:12px 0;
+}
+.link-box {
+  background:#1e1e1e;
+  padding:12px;
+  border-radius:10px;
+  text-align:left;
+  word-wrap:break-word;
+  overflow-wrap:break-word;
+}
+button {
+  width:100%;
+  padding:12px;
+  font-size:1.05em;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:12px;
+}
+button:hover {opacity:0.9;}
+.main-btn {
+  background-color:#1DB954;
+  color:white;
+}
+.share-btn {
+  background-color:#333;
+  color:#1DB954;
+  border:1px solid #1DB954;
+}
+.share-btn:hover {
+  background-color:#1DB954;
+  color:white;
+}
+#qrcode {
+  margin-top:20px;
+}
 </style>
 </head>
 <body>
@@ -383,10 +429,59 @@ button:hover{background-color:#1ed760;}
   <h2>✅ Playlist Created!</h2>
   <p>Open on Spotify:</p>
   <div class="link-box">
-    <a href="{{ url }}">{{ url }}</a>
+    <a href="{{ url }}" target="_blank">{{ url }}</a>
   </div>
-  <a href="{{ url_for('index') }}"><button>Create Another</button></a>
+
+  <h3 style="margin-top:25px;">Share This Playlist</h3>
+  <button class="share-btn" id="copyButton">🔗 Copy Link</button>
+  <button class="share-btn" id="textButton">💬 Share via Text</button>
+  <button class="share-btn" id="emailButton">✉️ Share via Email</button>
+  <button class="share-btn" id="whatsappButton">🟢 Share via WhatsApp</button>
+  <button class="share-btn" id="qrButton">📱 Generate QR Code</button>
+
+  <div id="qrcode"></div>
+
+  <a href="{{ url_for('index') }}"><button class="main-btn">🎵 Create Another</button></a>
 </div>
+
+<!-- QR code generator -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+const playlistUrl = "{{ url }}";
+
+document.getElementById("copyButton").addEventListener("click", () => {
+  navigator.clipboard.writeText(playlistUrl);
+  alert("✅ Link copied to clipboard!");
+});
+
+document.getElementById("textButton").addEventListener("click", () => {
+  const message = encodeURIComponent("Check out my new Spotify playlist! 🎶 " + playlistUrl);
+  window.location.href = `sms:?body=${message}`;
+});
+
+document.getElementById("emailButton").addEventListener("click", () => {
+  const subject = encodeURIComponent("My Spotify Playlist 🎧");
+  const body = encodeURIComponent("Hey, check out this playlist I just made:\n\n" + playlistUrl);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+});
+
+document.getElementById("whatsappButton").addEventListener("click", () => {
+  const message = encodeURIComponent("Check out my new Spotify playlist! 🎶 " + playlistUrl);
+  window.open(`https://wa.me/?text=${message}`, "_blank");
+});
+
+document.getElementById("qrButton").addEventListener("click", () => {
+  const qrContainer = document.getElementById("qrcode");
+  qrContainer.innerHTML = "";
+  new QRCode(qrContainer, {
+    text: playlistUrl,
+    width: 180,
+    height: 180,
+    colorDark: "#1DB954",
+    colorLight: "#121212"
+  });
+});
+</script>
 </body>
 </html>
 """
