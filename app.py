@@ -458,32 +458,23 @@ def logout():
     return redirect(url_for("index"))
 
 @app.route("/preview", methods=["POST"])
-@app.route("/preview", methods=["POST"])
 def preview():
-    size_raw = request.form.get("size", "10")
-    try:
-        size = max(1, int(size_raw))
-    except ValueError:
-        flash("Please enter a valid number of songs.")
-        return redirect(url_for("index"))
-
-    token = get_token()
-    if not token:
+    if "token_info" not in session:
         return redirect(url_for("login"))
 
-    sp = ensure_spotify_client()
-    try:
-        songs = fetch_random_liked_songs(sp, batch_size=500)
-    except Exception as e:
-        return f"Failed to fetch liked songs: {e}"
+    sp = get_spotify_client()
+    size = int(request.form["count"])
 
+    # ✅ Fetch random liked songs
+    songs = fetch_random_liked_songs(sp, batch_size=500)
     if not songs:
-        return "You have no Liked Songs in Spotify."
+        return "Failed to fetch liked songs", 500
 
-        # ✅ Prevent duplicate artists
+    # ✅ Prevent duplicate artists, but allow songs with missing artist data
+    import random
     unique_by_artist = {}
     for s in songs:
-        # Handle both data formats
+        # Handle both possible data formats
         if "artist_names" in s:
             artist_list = s["artist_names"]
         elif "track" in s:
@@ -491,43 +482,40 @@ def preview():
         else:
             artist_list = []
 
-        artist = artist_list[0] if artist_list else "Unknown"
+        artist = artist_list[0] if artist_list else f"Unknown_{random.randint(1000,9999)}"
 
-        if artist not in unique_by_artist:
-            # Normalize structure for display
-            song_entry = {
-                "id": s.get("id") or s.get("track", {}).get("id"),
-                "name": s.get("name") or s.get("track", {}).get("name", "Unknown"),
-                "artist_names": artist_list or ["Unknown"]
-            }
-            unique_by_artist[artist] = song_entry
+        # Normalize structure for consistency
+        song_entry = {
+            "id": s.get("id") or s.get("track", {}).get("id"),
+            "name": s.get("name") or s.get("track", {}).get("name", "Unknown"),
+            "artist_names": artist_list or ["Unknown"]
+        }
 
-    unique_songs = list(unique_by_artist.values())
-    if len(unique_songs) <= size:
-        selection = unique_songs
-    else:
-        selection = random.sample(unique_songs, size)
-
-    # Store selected track IDs in session
-    session["preview_ids"] = [s["id"] for s in selection]
-
-    # Fetch song details for preview display
-    ids = session["preview_ids"]
-    track_objs = sp.tracks(ids).get("tracks", [])
-    tracks_for_display = []
-    for t in track_objs:
-        if not t:
+        # ✅ Only skip if we already have a valid artist
+        if artist_list and artist in unique_by_artist:
             continue
-        name = t.get("name", "Unknown")
-        artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
-        tracks_for_display.append({"name": name, "artists": artists})
 
-    # ✅ Render the new preview HTML
-    return render_template_string(
-        PREVIEW_HTML,
-        tracks=tracks_for_display,
-        count=len(tracks_for_display)
-    )
+        unique_by_artist[artist] = song_entry
+
+    # ✅ Use filtered list
+    filtered_songs = list(unique_by_artist.values())
+
+    # ✅ Select random sample for preview
+    if len(filtered_songs) < size:
+        selection = filtered_songs[:]
+    else:
+        selection = random.sample(filtered_songs, size)
+
+    # ✅ Format for display
+    tracks_for_display = [
+        {"name": s["name"], "artist": ", ".join(s["artist_names"])}
+        for s in selection
+    ]
+
+    # ✅ Store selected tracks in session for later playlist creation
+    session["selected_tracks"] = [s["id"] for s in selection if s["id"]]
+
+    return render_template_string(PREVIEW_HTML, tracks=tracks_for_display, count=len(tracks_for_display))
 
 @app.route("/create_playlist", methods=["POST"])
 def create_playlist():
