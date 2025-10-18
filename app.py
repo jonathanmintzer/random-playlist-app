@@ -458,6 +458,7 @@ def logout():
     return redirect(url_for("index"))
 
 @app.route("/preview", methods=["POST"])
+@app.route("/preview", methods=["POST"])
 def preview():
     size_raw = request.form.get("size", "10")
     try:
@@ -472,39 +473,46 @@ def preview():
 
     sp = ensure_spotify_client()
     try:
-        songs = fetch_random_liked_songs(sp, batch_size=500)
+        songs = fetch_all_liked_songs(sp)
     except Exception as e:
         return f"Failed to fetch liked songs: {e}"
 
     if not songs:
         return "You have no Liked Songs in Spotify."
 
-    # pick random songs without repeating artists
-unique_by_artist = {}
-for s in songs:
-    artist = s["artist_names"][0] if s["artist_names"] else "Unknown"
-    if artist not in unique_by_artist:
-        unique_by_artist[artist] = s
+    # ✅ Prevent duplicate artists
+    unique_by_artist = {}
+    for s in songs:
+        artist = s["artist_names"][0] if s["artist_names"] else "Unknown"
+        if artist not in unique_by_artist:
+            unique_by_artist[artist] = s
 
-unique_songs = list(unique_by_artist.values())
-if len(unique_songs) <= size:
-    selection = unique_songs
-else:
-    selection = random.sample(unique_songs, size)
+    unique_songs = list(unique_by_artist.values())
+    if len(unique_songs) <= size:
+        selection = unique_songs
+    else:
+        selection = random.sample(unique_songs, size)
 
-
-    # store selected track ids in session (small footprint)
+    # Store selected track IDs in session
     session["preview_ids"] = [s["id"] for s in selection]
-    # For display, we'll fetch track details
+
+    # Fetch song details for preview display
     ids = session["preview_ids"]
     track_objs = sp.tracks(ids).get("tracks", [])
     tracks_for_display = []
     for t in track_objs:
-        if not t: continue
+        if not t:
+            continue
         name = t.get("name", "Unknown")
         artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
         tracks_for_display.append({"name": name, "artists": artists})
-        return render_template_string(PREVIEW_HTML, tracks=tracks_for_display, count=len(tracks_for_display))
+
+    # ✅ Render the new preview HTML
+    return render_template_string(
+        PREVIEW_HTML,
+        tracks=tracks_for_display,
+        count=len(tracks_for_display)
+    )
 
 @app.route("/create_playlist", methods=["POST"])
 def create_playlist():
