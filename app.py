@@ -162,9 +162,38 @@ button{background-color:#1DB954;color:white;cursor:pointer;}
 button:hover{background-color:#1ed760;}
 input[type=number]{width:60%;max-width:180px;text-align:center;}
 a{color:#1DB954;text-decoration:none;}
+#loader {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin-top:40px;
+}
+
+.hidden { display:none; }
+
+#dancer {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: fillDance 3s linear infinite;
+}
+
+@keyframes fillDance {
+  0% { stroke-dashoffset: 400; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 400; }
+}
 </style>
 </head>
 <body>
+<div id="loader" class="hidden">
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Simple breakdancer silhouette shape -->
+    <path id="dancer" d="M110,30 q-10,20 -20,0 q10,40 30,50 q-20,10 -25,40 q15,10 30,0 q0,20 20,25 q10,-15 0,-35 q15,5 25,-10 q-10,-15 -25,-10 q10,-20 -5,-35 q-20,5 -30,-25 z"
+      fill="none" stroke="#1DB954" stroke-width="4"/>
+  </svg>
+  <p style="margin-top:10px;color:#1DB954;">Getting your songs...</p>
+</div>
 <div class="container">
   <h2>🎵 Random Playlist Generator</h2>
   {% if not logged_in %}
@@ -180,6 +209,16 @@ a{color:#1DB954;text-decoration:none;}
   {% endif %}
   <p style="margin-top:18px;color:#aaa;">Tip: Fetching may take a moment.</p>
 </div>
+<script>
+  const form = document.querySelector("form");
+  const loader = document.getElementById("loader");
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      loader.classList.remove("hidden");  // show loader
+    });
+  }
+</script>
 </body>
 </html>
 """
