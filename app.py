@@ -480,12 +480,27 @@ def preview():
     if not songs:
         return "You have no Liked Songs in Spotify."
 
-    # ✅ Prevent duplicate artists
+        # ✅ Prevent duplicate artists
     unique_by_artist = {}
     for s in songs:
-        artist = s["artist_names"][0] if s["artist_names"] else "Unknown"
+        # Handle both data formats
+        if "artist_names" in s:
+            artist_list = s["artist_names"]
+        elif "track" in s:
+            artist_list = [a["name"] for a in s["track"]["artists"]] if s["track"].get("artists") else []
+        else:
+            artist_list = []
+
+        artist = artist_list[0] if artist_list else "Unknown"
+
         if artist not in unique_by_artist:
-            unique_by_artist[artist] = s
+            # Normalize structure for display
+            song_entry = {
+                "id": s.get("id") or s.get("track", {}).get("id"),
+                "name": s.get("name") or s.get("track", {}).get("name", "Unknown"),
+                "artist_names": artist_list or ["Unknown"]
+            }
+            unique_by_artist[artist] = song_entry
 
     unique_songs = list(unique_by_artist.values())
     if len(unique_songs) <= size:
