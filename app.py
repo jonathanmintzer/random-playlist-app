@@ -160,7 +160,7 @@ body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:
 button,input[type=number]{font-size:1.1em;border-radius:10px;padding:10px 16px;margin-top:12px;border:none;}
 button{background-color:#1DB954;color:white;cursor:pointer;}
 button:hover{background-color:#1ed760;}
-input[type=number]{width:100%;text-align:center;}
+input[type=number]{width:60%;max-width:180px;text-align:center;}
 a{color:#1DB954;text-decoration:none;}
 </style>
 </head>
@@ -227,16 +227,47 @@ SUCCESS_HTML = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Created</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;text-align:center;padding:30px;}
-a{color:#1DB954;text-decoration:none;}
-button{background-color:#1DB954;color:white;border:none;font-size:1.1em;border-radius:10px;padding:12px 20px;margin-top:20px;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#121212;color:#fff;text-align:center;padding:30px;margin:0;
+}
+.container{
+  max-width: 420px;  /* keeps content narrow on phones */
+  margin: 0 auto;
+  padding: 0 16px;
+}
+a{
+  color:#1DB954;text-decoration:none;
+  word-wrap:break-word;         /* allow long URLs to wrap */
+  overflow-wrap:break-word;     /* modern wrap property */
+}
+p{
+  word-wrap:break-word;
+  overflow-wrap:break-word;
+  margin: 12px 0;
+}
+.link-box{
+  background:#1e1e1e;
+  padding:12px;
+  border-radius:10px;
+  text-align:left;              /* better wrapping for very long URLs */
+}
+button{
+  background-color:#1DB954;color:white;border:none;font-size:1.1em;
+  border-radius:10px;padding:12px 20px;margin-top:20px;
+}
 button:hover{background-color:#1ed760;}
 </style>
 </head>
 <body>
-<h2>✅ Playlist Created!</h2>
-<p>Your playlist: <a href="{{ url }}">{{ url }}</a></p>
-<a href="{{ url_for('index') }}"><button>Create Another</button></a>
+<div class="container">
+  <h2>✅ Playlist Created!</h2>
+  <p>Open on Spotify:</p>
+  <div class="link-box">
+    <a href="{{ url }}">{{ url }}</a>
+  </div>
+  <a href="{{ url_for('index') }}"><button>Create Another</button></a>
+</div>
 </body>
 </html>
 """
