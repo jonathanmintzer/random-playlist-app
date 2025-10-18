@@ -290,12 +290,52 @@ button{
   background-color:#1DB954;color:white;cursor:pointer;
 }
 button:hover{background-color:#1ed760;}
+
+/* Loader styling */
+#loader {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin:20px 0;
+}
+.spinner {
+  width:70px;height:70px;
+  border:6px solid rgba(255,255,255,0.15);
+  border-top:6px solid #1DB954;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:10px;
+}
+@keyframes spin {
+  0% {transform:rotate(0deg);}
+  100% {transform:rotate(360deg);}
+}
+.note {
+  font-size:26px;
+  color:#1DB954;
+  animation:bounce 1.5s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%,100% {transform:translateY(0);}
+  50% {transform:translateY(-6px);}
+}
 </style>
 </head>
 <body>
 <div class="container">
   <h2>💾 Save Playlist</h2>
-  <form action="{{ url_for('confirm_save_playlist') }}" method="post">
+
+  <!-- Spinner loader (hidden by default) -->
+  <div id="loader">
+    <div class="spinner"><div class="note">🎵</div></div>
+    <p style="color:#1DB954;font-size:0.9em;">Saving to Spotify...</p>
+  </div>
+
+  <form id="saveForm" action="{{ url_for('confirm_save_playlist') }}" method="post">
     <label for="title">Playlist Title:</label><br>
     <input type="text" id="title" name="title" value="{{ suggested_title }}"><br>
 
@@ -307,6 +347,18 @@ button:hover{background-color:#1ed760;}
     <button type="submit">Confirm Save</button>
   </form>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const form = document.getElementById("saveForm");
+  const loader = document.getElementById("loader");
+  if(form && loader){
+    form.addEventListener("submit", function(){
+      loader.style.display = "flex"; // show spinner while saving
+    });
+  }
+});
+</script>
 </body>
 </html>
 """
