@@ -155,70 +155,35 @@ INDEX_HTML = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Random Spotify Playlist</title>
 <style>
-body {
+body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  margin:0;padding:0;
-  background:#121212;
-  color:#fff;
-  text-align:center;
+  margin:0;padding:0;background:#121212;color:#fff;text-align:center;
 }
-.container {
-  max-width:400px;
-  margin:auto;
-  padding:20px;
+.container{max-width:400px;margin:auto;padding:20px;}
+button,input[type=number]{
+  font-size:1.1em;border-radius:10px;padding:10px 16px;margin-top:12px;border:none;
 }
-button, input[type=number] {
-  font-size:1.1em;
-  border-radius:10px;
-  padding:10px 16px;
-  margin-top:12px;
-  border:none;
-}
-button {
-  background-color:#1DB954;
-  color:white;
-  cursor:pointer;
-}
-button:hover { background-color:#1ed760; }
-input[type=number] {
-  width:60%;
-  max-width:180px;
-  text-align:center;
-}
-a { color:#1DB954; text-decoration:none; }
+button{background-color:#1DB954;color:white;cursor:pointer;}
+button:hover{background-color:#1ed760;}
+input[type=number]{width:60%;max-width:180px;text-align:center;}
+a{color:#1DB954;text-decoration:none;}
 
-/* ==== Loader styling ==== */
-#loader {
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  margin:15px 0;
+/* ==== Breakdancer loader ==== */
+#loader{
+  display:none;flex-direction:column;align-items:center;justify-content:center;margin:15px 0;
 }
-#dancer-outline {
-  fill:none;
+#dancer{
+  fill:url(#grad);
   stroke:#1DB954;
-  stroke-width:3;
+  stroke-width:2;
   stroke-linecap:round;
   stroke-linejoin:round;
-  stroke-dasharray:300;
-  stroke-dashoffset:300;
-  animation:fillOutline 2s ease-in-out infinite;
+  animation:fillUp 2s ease-in-out infinite;
 }
-#dancer-fill {
-  fill:#1DB954;
-  opacity:0.1;
-  animation:fillColor 2s ease-in-out infinite;
-}
-@keyframes fillOutline {
-  0% { stroke-dashoffset:300; opacity:0.3; }
-  50% { stroke-dashoffset:0; opacity:1; }
-  100% { stroke-dashoffset:300; opacity:0.3; }
-}
-@keyframes fillColor {
-  0% { opacity:0.1; }
-  50% { opacity:0.5; }
-  100% { opacity:0.1; }
+@keyframes fillUp{
+  0%{fill-opacity:0.1;}
+  50%{fill-opacity:1;}
+  100%{fill-opacity:0.1;}
 }
 </style>
 </head>
@@ -229,9 +194,17 @@ a { color:#1DB954; text-decoration:none; }
   <!-- Breakdancer loader -->
   <div id="loader">
     <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:90px;">
-      <path id="dancer-fill"
-        d="M70,15 l10,10 q10,10 0,20 l-5,10 q15,5 25,20 q-5,10 -15,10 q-5,10 5,20 q10,-5 15,-15 q5,15 -5,25 q-15,5 -25,-5 q-10,10 -20,0 q5,-10 10,-15 q-15,-10 -20,-30 q10,-10 20,-10 l-10,-10 q-10,-10 0,-20 z"/>
-      <path id="dancer-outline"
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#1DB954" stop-opacity="0.1">
+            <animate attributeName="stop-opacity" values="0.1;1;0.1" dur="2s" repeatCount="indefinite" />
+          </stop>
+          <stop offset="100%" stop-color="#1DB954" stop-opacity="0.8">
+            <animate attributeName="stop-opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+          </stop>
+        </linearGradient>
+      </defs>
+      <path id="dancer"
         d="M70,15 l10,10 q10,10 0,20 l-5,10 q15,5 25,20 q-5,10 -15,10 q-5,10 5,20 q10,-5 15,-15 q5,15 -5,25 q-15,5 -25,-5 q-10,10 -20,0 q5,-10 10,-15 q-15,-10 -20,-30 q10,-10 20,-10 l-10,-10 q-10,-10 0,-20 z"/>
     </svg>
     <p style="margin-top:5px;color:#1DB954;font-size:0.9em;">Fetching songs...</p>
@@ -257,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function(){
   const loader = document.getElementById("loader");
   if(form && loader){
     form.addEventListener("submit", function(){
-      loader.style.display = "flex";
+      loader.style.display = "flex"; // show the dancer when fetching starts
     });
   }
 });
