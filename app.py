@@ -265,6 +265,52 @@ document.addEventListener("DOMContentLoaded", function(){
 </html>
 """
 
+SAVE_FORM_HTML = """
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Save Playlist</title>
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#121212;color:#fff;text-align:center;margin:0;padding:20px;
+}
+.container{max-width:420px;margin:auto;}
+input[type=text]{
+  width:100%;padding:10px;font-size:1em;border-radius:8px;border:none;
+  margin-top:10px;margin-bottom:16px;
+}
+.radio-group{
+  display:flex;justify-content:center;gap:20px;margin-bottom:20px;
+}
+label{font-size:1em;cursor:pointer;}
+button{
+  width:100%;padding:12px;font-size:1.1em;border:none;border-radius:10px;
+  background-color:#1DB954;color:white;cursor:pointer;
+}
+button:hover{background-color:#1ed760;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>💾 Save Playlist</h2>
+  <form action="{{ url_for('confirm_save_playlist') }}" method="post">
+    <label for="title">Playlist Title:</label><br>
+    <input type="text" id="title" name="title" value="{{ suggested_title }}"><br>
+
+    <div class="radio-group">
+      <label><input type="radio" name="privacy" value="private" checked> Save as Private</label>
+      <label><input type="radio" name="privacy" value="public"> Save as Public</label>
+    </div>
+
+    <button type="submit">Confirm Save</button>
+  </form>
+</div>
+</body>
+</html>
+"""
+
 SUCCESS_HTML = """
 <!doctype html>
 <html lang="en">
@@ -344,22 +390,43 @@ def preview():
 
 @app.route("/create_playlist", methods=["POST"])
 def create_playlist():
+    token = get_token()
+    if not token:
+        return redirect(url_for("login"))
     sp = ensure_spotify_client()
     ids = session.get("preview_ids", [])
     if not ids:
         return "No previewed songs found. Preview first."
 
+    # ✅ Generate suggested title and show the user a form
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+    suggested_title = f"{today} 🎲 Random Playlist"
+    session["pending_ids"] = ids  # store temporarily until confirmed
+    return render_template_string(SAVE_FORM_HTML, suggested_title=suggested_title)
+
+@app.route("/confirm_save_playlist", methods=["POST"])
+def confirm_save_playlist():
+    sp = ensure_spotify_client()
+    ids = session.get("pending_ids", [])
+    if not ids:
+        return "No songs found to save."
+
+    title = request.form.get("title", "Random Playlist")
+    privacy = request.form.get("privacy", "private")
+
     user = sp.current_user()
-    user_id = user["id"]
-    today = date.today().strftime("%Y-%m-%d")
-    playlist_name = f"{today} 🎲 Random Playlist"
-    playlist = sp.user_playlist_create(user_id, playlist_name, public=False)
+    user_id = user.get("id")
 
-    for i in range(0, len(ids), 100):
-        sp.playlist_add_items(playlist["id"], ids[i:i+100])
-
-    url = playlist["external_urls"]["spotify"]
-    return render_template_string(SUCCESS_HTML, url=url)
+    try:
+        playlist = sp.user_playlist_create(user_id, title, public=(privacy == "public"))
+        for i in range(0, len(ids), 100):
+            sp.playlist_add_items(playlist["id"], ids[i:i+100])
+        playlist_url = playlist.get("external_urls", {}).get("spotify")
+        session.pop("pending_ids", None)
+        return render_template_string(SUCCESS_HTML, url=playlist_url)
+    except Exception as e:
+        return f"Failed to create playlist: {e}"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8888)))
