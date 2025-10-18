@@ -473,7 +473,7 @@ def preview():
 
     sp = ensure_spotify_client()
     try:
-        songs = fetch_all_liked_songs(sp)
+        songs = fetch_random_liked_songs(sp, batch_size=500)
     except Exception as e:
         return f"Failed to fetch liked songs: {e}"
 
