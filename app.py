@@ -150,47 +150,95 @@ def fetch_random_liked_songs(sp, batch_size=500):
 # ---------- Routes ----------
 INDEX_HTML = """
 <!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Random Spotify Playlist</title>
-<h2>Random Spotify Playlist</h2>
-{% if not logged_in %}
-  <p><b>Not signed in</b> — you must sign in to Spotify to use the app.</p>
-  <a href="{{ url_for('login') }}">Sign in with Spotify</a>
-{% else %}
-  <form action="{{ url_for('preview') }}" method="post">
-    <label>Number of songs:
-      <input type="number" name="size" min="1" value="10" required>
-    </label>
-    <button type="submit">Preview</button>
-  </form>
-
-  <p style="margin-top:12px;">
-    <a href="{{ url_for('logout') }}">Log out</a>
-  </p>
-{% endif %}
-<p style="margin-top:18px;color:gray">Tip: First run may take a bit while your Liked Songs are fetched.</p>
+<style>
+body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;background:#121212;color:#fff;text-align:center;}
+.container {max-width:400px;margin:auto;padding:20px;}
+button,input[type=number]{font-size:1.1em;border-radius:10px;padding:10px 16px;margin-top:12px;border:none;}
+button{background-color:#1DB954;color:white;cursor:pointer;}
+button:hover{background-color:#1ed760;}
+input[type=number]{width:100%;text-align:center;}
+a{color:#1DB954;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🎵 Random Playlist Generator</h2>
+  {% if not logged_in %}
+    <p>Sign in to Spotify to begin.</p>
+    <a href="{{ url_for('login') }}"><button>Sign in with Spotify</button></a>
+  {% else %}
+    <form action="{{ url_for('preview') }}" method="post">
+      <label>Number of songs:</label><br>
+      <input type="number" name="size" min="1" value="10" required><br>
+      <button type="submit">Create Preview</button>
+    </form>
+    <p style="margin-top:20px;"><a href="{{ url_for('logout') }}">Log out</a></p>
+  {% endif %}
+  <p style="margin-top:18px;color:#aaa;">Tip: Fetching may take a moment.</p>
+</div>
+</body>
+</html>
 """
 
 PREVIEW_HTML = """
 <!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Preview</title>
-<h2>Preview: {{ count }} songs</h2>
-<ol>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;margin:0;padding:20px;}
+h2{text-align:center;}
+.table-container{max-height:400px;overflow-y:auto;margin:20px 0;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px;text-align:left;}
+tr:nth-child(even){background-color:#1e1e1e;}
+button{width:100%;background-color:#1DB954;border:none;color:white;font-size:1.1em;padding:12px;border-radius:10px;margin-top:10px;}
+button:hover{background-color:#1ed760;}
+a{color:#1DB954;text-decoration:none;}
+</style>
+</head>
+<body>
+<h2>Preview: {{ count }} Songs</h2>
+<div class="table-container">
+<table>
+  <tr><th>Title</th><th>Artist</th></tr>
   {% for t in tracks %}
-    <li>{{ t.name }} — {{ t.artists }}</li>
+    <tr><td>{{ t.name }}</td><td>{{ t.artists }}</td></tr>
   {% endfor %}
-</ol>
+</table>
+</div>
 <form action="{{ url_for('create_playlist') }}" method="post">
-  <button type="submit">Create Playlist on Spotify</button>
+  <button type="submit">Save Playlist</button>
 </form>
-<p><a href="{{ url_for('index') }}">Back</a></p>
+<p style="text-align:center;margin-top:20px;"><a href="{{ url_for('index') }}">Back</a></p>
+</body>
+</html>
 """
 
 SUCCESS_HTML = """
 <!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Created</title>
-<h2>Playlist Created!</h2>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;text-align:center;padding:30px;}
+a{color:#1DB954;text-decoration:none;}
+button{background-color:#1DB954;color:white;border:none;font-size:1.1em;border-radius:10px;padding:12px 20px;margin-top:20px;}
+button:hover{background-color:#1ed760;}
+</style>
+</head>
+<body>
+<h2>✅ Playlist Created!</h2>
 <p>Your playlist: <a href="{{ url }}">{{ url }}</a></p>
-<p><a href="{{ url_for('index') }}">Create another</a></p>
+<a href="{{ url_for('index') }}"><button>Create Another</button></a>
+</body>
+</html>
 """
 
 @app.route("/")
