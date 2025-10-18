@@ -389,7 +389,7 @@ p { margin:12px 0; }
   width:100%;
   padding:12px;
   font-size:1.05em;
-  border:none;
+  border:none;              /* ✅ removed green outline */
   border-radius:10px;
   cursor:pointer;
   margin-top:12px;
@@ -397,7 +397,7 @@ p { margin:12px 0; }
   box-sizing:border-box;
 }
 .btn-main { background-color:#1DB954; color:#fff; }
-.btn-alt  { background-color:#333; color:#1DB954; border:1px solid #1DB954; }
+.btn-alt  { background-color:#333; color:#1DB954; }
 .btn:hover, a.btn:hover { opacity:0.9; }
 
 .share-row { margin-top:20px; }
