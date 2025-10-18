@@ -159,36 +159,95 @@ PREVIEW_HTML = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Preview</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;text-align:center;margin:0;padding:20px;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#121212;color:#fff;text-align:center;margin:0;padding:20px;
+}
 .container{max-width:400px;margin:auto;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{padding:8px 6px;border-bottom:1px solid #333;text-align:left;font-size:0.9em;}
 th{color:#1DB954;text-transform:uppercase;font-size:0.8em;}
-button{display:block;width:100%;margin:10px 0;padding:12px;font-size:1.1em;border:none;border-radius:10px;cursor:pointer;}
+button{display:block;width:100%;margin:10px 0;padding:12px;font-size:1.1em;
+       border:none;border-radius:10px;cursor:pointer;}
 .save{background-color:#1DB954;color:white;}
 .save:hover{background-color:#1ed760;}
 .reshuffle{background-color:#333;color:#1DB954;border:1px solid #1DB954;}
 .reshuffle:hover{background-color:#1DB954;color:white;}
+
+/* Loader styling */
+#loader {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin:20px 0;
+}
+.spinner {
+  width:70px;height:70px;
+  border:6px solid rgba(255,255,255,0.15);
+  border-top:6px solid #1DB954;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:10px;
+}
+@keyframes spin {
+  0% {transform:rotate(0deg);}
+  100% {transform:rotate(360deg);}
+}
+.note {
+  font-size:26px;
+  color:#1DB954;
+  animation:bounce 1.5s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%,100% {transform:translateY(0);}
+  50% {transform:translateY(-6px);}
+}
 </style>
 </head>
 <body>
 <div class="container">
   <h2>🎶 Preview: {{ count }} Songs</h2>
+
+  <!-- Spinner loader (hidden by default) -->
+  <div id="loader">
+    <div class="spinner"><div class="note">🎵</div></div>
+    <p style="color:#1DB954;font-size:0.9em;">Reshuffling songs...</p>
+  </div>
+
   <table>
     <tr><th>Song</th><th>Artist</th></tr>
     {% for t in tracks %}
       <tr><td>{{ t.name }}</td><td>{{ t.artists }}</td></tr>
     {% endfor %}
   </table>
+
   <form action="{{ url_for('create_playlist') }}" method="post">
     <button type="submit" class="save">💾 Save Playlist</button>
   </form>
-  <form action="{{ url_for('preview') }}" method="post">
+
+  <form id="reshuffleForm" action="{{ url_for('preview') }}" method="post">
     <input type="hidden" name="size" value="{{ count }}">
     <button type="submit" class="reshuffle">🔀 Reshuffle</button>
   </form>
+
   <p><a href="{{ url_for('index') }}" style="color:#1DB954;">⬅️ Back</a></p>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const reshuffleForm = document.getElementById("reshuffleForm");
+  const loader = document.getElementById("loader");
+  if(reshuffleForm && loader){
+    reshuffleForm.addEventListener("submit", function(){
+      loader.style.display = "flex"; // show spinner during reshuffle
+    });
+  }
+});
+</script>
 </body>
 </html>
 """
