@@ -375,53 +375,23 @@ body {
   background:#121212;color:#fff;text-align:center;
   margin:0;padding:30px;
 }
-.container {
-  max-width:420px;
-  margin:0 auto;
-  padding:0 16px;
-}
-a {
-  color:#1DB954;text-decoration:none;
-  word-wrap:break-word;
-  overflow-wrap:break-word;
-}
-p {
-  margin:12px 0;
-}
+.container { max-width:420px; margin:0 auto; padding:0 16px; }
+a { color:#1DB954; text-decoration:none; word-wrap:break-word; overflow-wrap:break-word; }
+p { margin:12px 0; }
 .link-box {
-  background:#1e1e1e;
-  padding:12px;
-  border-radius:10px;
-  text-align:left;
-  word-wrap:break-word;
-  overflow-wrap:break-word;
+  background:#1e1e1e; padding:12px; border-radius:10px; text-align:left;
+  word-wrap:break-word; overflow-wrap:break-word;
 }
-button {
-  width:100%;
-  padding:12px;
-  font-size:1.05em;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  margin-top:12px;
+.btn {
+  display:block; width:100%; padding:12px; font-size:1.05em; border:none;
+  border-radius:10px; cursor:pointer; margin-top:12px; text-align:center;
 }
-button:hover {opacity:0.9;}
-.main-btn {
-  background-color:#1DB954;
-  color:white;
-}
-.share-btn {
-  background-color:#333;
-  color:#1DB954;
-  border:1px solid #1DB954;
-}
-.share-btn:hover {
-  background-color:#1DB954;
-  color:white;
-}
-#qrcode {
-  margin-top:20px;
-}
+.btn-main { background-color:#1DB954; color:#fff; }
+.btn-alt  { background-color:#333; color:#1DB954; border:1px solid #1DB954; }
+.btn:hover { opacity:0.9; }
+.share-row { margin-top:20px; }
+#qrcode { margin-top:20px; }
+.hidden-input { position:absolute; left:-9999px; }
 </style>
 </head>
 <body>
@@ -429,58 +399,99 @@ button:hover {opacity:0.9;}
   <h2>✅ Playlist Created!</h2>
   <p>Open on Spotify:</p>
   <div class="link-box">
-    <a href="{{ url }}" target="_blank">{{ url }}</a>
+    <a id="playlistLink" href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a>
   </div>
 
-  <h3 style="margin-top:25px;">Share This Playlist</h3>
-  <button class="share-btn" id="copyButton">🔗 Copy Link</button>
-  <button class="share-btn" id="textButton">💬 Share via Text</button>
-  <button class="share-btn" id="emailButton">✉️ Share via Email</button>
-  <button class="share-btn" id="whatsappButton">🟢 Share via WhatsApp</button>
-  <button class="share-btn" id="qrButton">📱 Generate QR Code</button>
+  <h3 class="share-row">Share This Playlist</h3>
 
+  <!-- Copy (JS-enhanced; graceful fallback via manual select if JS blocked) -->
+  <button class="btn btn-alt" id="copyBtn">🔗 Copy Link</button>
+
+  <!-- Text / Email / WhatsApp use direct links that work without JS -->
+  <a class="btn btn-alt" id="smsLink"
+     href="sms:?&body={{ ('Check out my new Spotify playlist! 🎶 ' ~ url)|urlencode }}">
+     💬 Share via Text
+  </a>
+
+  <a class="btn btn-alt" id="emailLink"
+     href="mailto:?subject={{ ('My Spotify Playlist 🎧')|urlencode }}&body={{ ('Hey, check out this playlist I just made:%0A%0A' ~ url)|urlencode }}">
+     ✉️ Share via Email
+  </a>
+
+  <a class="btn btn-alt" id="waLink"
+     target="_blank" rel="noopener"
+     href="https://wa.me/?text={{ ('Check out my new Spotify playlist! 🎶 ' ~ url)|urlencode }}">
+     🟢 Share via WhatsApp
+  </a>
+
+  <button class="btn btn-alt" id="qrBtn">📱 Generate QR Code</button>
   <div id="qrcode"></div>
 
-  <a href="{{ url_for('index') }}"><button class="main-btn">🎵 Create Another</button></a>
+  <a href="{{ url_for('index') }}" class="btn btn-main">🎵 Create Another</a>
+
+  <!-- Hidden input used as a robust fallback for copying -->
+  <input id="hiddenUrl" class="hidden-input" type="text" value="{{ url }}">
 </div>
 
-<!-- QR code generator -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<!-- QR code generator (lazy-loaded in JS for reliability) -->
 <script>
-const playlistUrl = "{{ url }}";
+(function(){
+  const url = "{{ url }}";
+  const copyBtn = document.getElementById('copyBtn');
+  const hiddenUrl = document.getElementById('hiddenUrl');
+  const qrBtn = document.getElementById('qrBtn');
+  const qrContainer = document.getElementById('qrcode');
 
-document.getElementById("copyButton").addEventListener("click", () => {
-  navigator.clipboard.writeText(playlistUrl);
-  alert("✅ Link copied to clipboard!");
-});
+  // Copy link with best-effort fallbacks (works on iOS Safari over HTTPS)
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async function() {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          hiddenUrl.value = url;
+          hiddenUrl.select();
+          hiddenUrl.setSelectionRange(0, 99999);
+          document.execCommand('copy');
+        }
+        alert('✅ Link copied to clipboard!');
+      } catch (e) {
+        // Final fallback: prompt
+        window.prompt('Copy this link:', url);
+      }
+    });
+  }
 
-document.getElementById("textButton").addEventListener("click", () => {
-  const message = encodeURIComponent("Check out my new Spotify playlist! 🎶 " + playlistUrl);
-  window.location.href = `sms:?body=${message}`;
-});
+  // QR generation with lazy-loaded script + graceful retry
+  function loadQrLib(cb){
+    if (window.QRCode) return cb();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+    s.onload = cb;
+    s.onerror = function(){
+      alert('Could not load QR library. Please try again.');
+    };
+    document.body.appendChild(s);
+  }
 
-document.getElementById("emailButton").addEventListener("click", () => {
-  const subject = encodeURIComponent("My Spotify Playlist 🎧");
-  const body = encodeURIComponent("Hey, check out this playlist I just made:\n\n" + playlistUrl);
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
-});
+  if (qrBtn) {
+    qrBtn.addEventListener('click', function(){
+      loadQrLib(function(){
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+          text: url,
+          width: 180,
+          height: 180,
+          colorDark: "#1DB954",
+          colorLight: "#121212"
+        });
+      });
+    });
+  }
 
-document.getElementById("whatsappButton").addEventListener("click", () => {
-  const message = encodeURIComponent("Check out my new Spotify playlist! 🎶 " + playlistUrl);
-  window.open(`https://wa.me/?text=${message}`, "_blank");
-});
-
-document.getElementById("qrButton").addEventListener("click", () => {
-  const qrContainer = document.getElementById("qrcode");
-  qrContainer.innerHTML = "";
-  new QRCode(qrContainer, {
-    text: playlistUrl,
-    width: 180,
-    height: 180,
-    colorDark: "#1DB954",
-    colorLight: "#121212"
-  });
-});
+  // Bonus: if the device supports the native share sheet, offer that via long-press copy/link,
+  // while keeping explicit buttons for SMS/Email/WhatsApp above.
+})();
 </script>
 </body>
 </html>
