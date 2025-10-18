@@ -212,10 +212,10 @@ button{display:block;width:100%;margin:10px 0;padding:12px;font-size:1.1em;
 <div class="container">
   <h2>🎶 Preview: {{ count }} Songs</h2>
 
-  <!-- Spinner loader (hidden by default) -->
+  <!-- Loader -->
   <div id="loader">
     <div class="spinner"><div class="note">🎵</div></div>
-    <p style="color:#1DB954;font-size:0.9em;">Reshuffling songs...</p>
+    <p id="loader-text" style="color:#1DB954;font-size:0.9em;">Loading...</p>
   </div>
 
   <table>
@@ -225,7 +225,7 @@ button{display:block;width:100%;margin:10px 0;padding:12px;font-size:1.1em;
     {% endfor %}
   </table>
 
-  <form action="{{ url_for('create_playlist') }}" method="post">
+  <form id="saveForm" action="{{ url_for('create_playlist') }}" method="post">
     <button type="submit" class="save">💾 Save Playlist</button>
   </form>
 
@@ -239,11 +239,24 @@ button{display:block;width:100%;margin:10px 0;padding:12px;font-size:1.1em;
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-  const reshuffleForm = document.getElementById("reshuffleForm");
   const loader = document.getElementById("loader");
+  const loaderText = document.getElementById("loader-text");
+  const reshuffleForm = document.getElementById("reshuffleForm");
+  const saveForm = document.getElementById("saveForm");
+
+  // Show spinner for reshuffle
   if(reshuffleForm && loader){
     reshuffleForm.addEventListener("submit", function(){
-      loader.style.display = "flex"; // show spinner during reshuffle
+      loader.style.display = "flex";
+      loaderText.textContent = "Reshuffling songs...";
+    });
+  }
+
+  // Show spinner for saving playlist
+  if(saveForm && loader){
+    saveForm.addEventListener("submit", function(){
+      loader.style.display = "flex";
+      loaderText.textContent = "Saving to Spotify...";
     });
   }
 });
