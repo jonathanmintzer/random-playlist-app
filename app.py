@@ -463,7 +463,7 @@ def preview():
         return redirect(url_for("login"))
 
     sp = ensure_spotify_client()
-    size = int(request.form["count"])
+    size = int(request.form["size"])
 
     # ✅ Fetch random liked songs
     songs = fetch_random_liked_songs(sp, batch_size=500)
