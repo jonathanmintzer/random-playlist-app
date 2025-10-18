@@ -504,7 +504,7 @@ else:
         name = t.get("name", "Unknown")
         artists = ", ".join([a.get("name", "") for a in t.get("artists", [])])
         tracks_for_display.append({"name": name, "artists": artists})
-    return render_template_string(PREVIEW_HTML, tracks=tracks_for_display, count=len(tracks_for_display))
+        return render_template_string(PREVIEW_HTML, tracks=tracks_for_display, count=len(tracks_for_display))
 
 @app.route("/create_playlist", methods=["POST"])
 def create_playlist():
