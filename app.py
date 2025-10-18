@@ -382,13 +382,24 @@ p { margin:12px 0; }
   background:#1e1e1e; padding:12px; border-radius:10px; text-align:left;
   word-wrap:break-word; overflow-wrap:break-word;
 }
-.btn {
-  display:block; width:100%; padding:12px; font-size:1.05em; border:none;
-  border-radius:10px; cursor:pointer; margin-top:12px; text-align:center;
+
+/* Uniform button sizing */
+.btn, a.btn {
+  display:block;
+  width:100%;
+  padding:12px;
+  font-size:1.05em;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:12px;
+  text-align:center;
+  box-sizing:border-box;
 }
 .btn-main { background-color:#1DB954; color:#fff; }
 .btn-alt  { background-color:#333; color:#1DB954; border:1px solid #1DB954; }
-.btn:hover { opacity:0.9; }
+.btn:hover, a.btn:hover { opacity:0.9; }
+
 .share-row { margin-top:20px; }
 #qrcode { margin-top:20px; }
 .hidden-input { position:absolute; left:-9999px; }
@@ -404,17 +415,17 @@ p { margin:12px 0; }
 
   <h3 class="share-row">Share This Playlist</h3>
 
-  <!-- Copy (JS-enhanced; graceful fallback via manual select if JS blocked) -->
+  <!-- Copy -->
   <button class="btn btn-alt" id="copyBtn">🔗 Copy Link</button>
 
-  <!-- Text / Email / WhatsApp use direct links that work without JS -->
+  <!-- Text / Email / WhatsApp share -->
   <a class="btn btn-alt" id="smsLink"
      href="sms:?&body={{ ('Check out my new Spotify playlist! 🎶 ' ~ url)|urlencode }}">
      💬 Share via Text
   </a>
 
   <a class="btn btn-alt" id="emailLink"
-     href="mailto:?subject={{ ('My Spotify Playlist 🎧')|urlencode }}&body={{ ('Hey, check out this playlist I just made:%0A%0A' ~ url)|urlencode }}">
+     href="mailto:?subject={{ ('My Spotify Playlist 🎧')|urlencode }}&body={{ ('Hey, check out this Spotify playlist I just made:%0A%0A' ~ url)|urlencode }}">
      ✉️ Share via Email
   </a>
 
@@ -424,16 +435,15 @@ p { margin:12px 0; }
      🟢 Share via WhatsApp
   </a>
 
+  <!-- QR Code -->
   <button class="btn btn-alt" id="qrBtn">📱 Generate QR Code</button>
   <div id="qrcode"></div>
 
   <a href="{{ url_for('index') }}" class="btn btn-main">🎵 Create Another</a>
 
-  <!-- Hidden input used as a robust fallback for copying -->
   <input id="hiddenUrl" class="hidden-input" type="text" value="{{ url }}">
 </div>
 
-<!-- QR code generator (lazy-loaded in JS for reliability) -->
 <script>
 (function(){
   const url = "{{ url }}";
@@ -442,7 +452,6 @@ p { margin:12px 0; }
   const qrBtn = document.getElementById('qrBtn');
   const qrContainer = document.getElementById('qrcode');
 
-  // Copy link with best-effort fallbacks (works on iOS Safari over HTTPS)
   if (copyBtn) {
     copyBtn.addEventListener('click', async function() {
       try {
@@ -456,13 +465,11 @@ p { margin:12px 0; }
         }
         alert('✅ Link copied to clipboard!');
       } catch (e) {
-        // Final fallback: prompt
         window.prompt('Copy this link:', url);
       }
     });
   }
 
-  // QR generation with lazy-loaded script + graceful retry
   function loadQrLib(cb){
     if (window.QRCode) return cb();
     const s = document.createElement('script');
@@ -488,9 +495,6 @@ p { margin:12px 0; }
       });
     });
   }
-
-  // Bonus: if the device supports the native share sheet, offer that via long-press copy/link,
-  // while keeping explicit buttons for SMS/Email/WhatsApp above.
 })();
 </script>
 </body>
