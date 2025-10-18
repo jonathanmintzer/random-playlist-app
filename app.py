@@ -401,7 +401,11 @@ p { margin:12px 0; }
 .btn:hover, a.btn:hover { opacity:0.9; }
 
 .share-row { margin-top:20px; }
-#qrcode { margin-top:20px; }
+#qrcode {
+  margin-top:20px;
+  display:flex;
+  justify-content:center;
+}
 .hidden-input { position:absolute; left:-9999px; }
 </style>
 </head>
@@ -425,7 +429,7 @@ p { margin:12px 0; }
   </a>
 
   <a class="btn btn-alt" id="emailLink"
-     href="mailto:?subject={{ ('My Spotify Playlist 🎧')|urlencode }}&body={{ ('Hey, check out this Spotify playlist I just made:%0A%0A' ~ url)|urlencode }}">
+     href="mailto:?subject={{ ('My Spotify Playlist 🎧')|urlencode }}&body={{ ('Hey, check out this Spotify playlist I just made:' ~ '\\n\\n' ~ url)|urlencode }}">
      ✉️ Share via Email
   </a>
 
@@ -492,6 +496,7 @@ p { margin:12px 0; }
           colorDark: "#1DB954",
           colorLight: "#121212"
         });
+        qrContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     });
   }
