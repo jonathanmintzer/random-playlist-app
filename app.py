@@ -462,7 +462,7 @@ def preview():
     if "token_info" not in session:
         return redirect(url_for("login"))
 
-    sp = get_spotify_client()
+    sp = ensure_spotify_client()
     size = int(request.form["count"])
 
     # ✅ Fetch random liked songs
