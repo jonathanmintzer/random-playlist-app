@@ -269,31 +269,104 @@ PREVIEW_HTML = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Preview</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#121212;color:#fff;margin:0;padding:20px;}
-h2{text-align:center;}
-.table-container{max-height:400px;overflow-y:auto;margin:20px 0;}
-table{width:100%;border-collapse:collapse;}
-th,td{padding:10px;text-align:left;}
-tr:nth-child(even){background-color:#1e1e1e;}
-button{width:100%;background-color:#1DB954;border:none;color:white;font-size:1.1em;padding:12px;border-radius:10px;margin-top:10px;}
-button:hover{background-color:#1ed760;}
-a{color:#1DB954;text-decoration:none;}
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#121212;color:#fff;text-align:center;margin:0;padding:20px;
+}
+.container {max-width:400px;margin:auto;}
+table {
+  width:100%;border-collapse:collapse;margin-top:15px;
+}
+th, td {
+  padding:8px 6px;border-bottom:1px solid #333;
+  text-align:left;font-size:0.9em;
+}
+th {color:#1DB954;text-transform:uppercase;font-size:0.8em;}
+button {
+  display:block;width:100%;margin:10px 0;padding:12px;
+  font-size:1.1em;border:none;border-radius:10px;cursor:pointer;
+}
+.save {background-color:#1DB954;color:white;}
+.save:hover {background-color:#1ed760;}
+.reshuffle {background-color:#333;color:#1DB954;border:1px solid #1DB954;}
+.reshuffle:hover {background-color:#1DB954;color:white;}
+
+/* Loader styling */
+#loader {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin:15px 0;
+}
+.spinner {
+  width:60px;height:60px;
+  border:5px solid rgba(255,255,255,0.15);
+  border-top:5px solid #1DB954;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:10px;
+}
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
+}
+.note {
+  font-size:24px;
+  color:#1DB954;
+  animation:bounce 1.5s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-6px); }
+}
 </style>
 </head>
 <body>
-<h2>Preview: {{ count }} Songs</h2>
-<div class="table-container">
-<table>
-  <tr><th>Title</th><th>Artist</th></tr>
-  {% for t in tracks %}
-    <tr><td>{{ t.name }}</td><td>{{ t.artists }}</td></tr>
-  {% endfor %}
-</table>
+<div class="container">
+  <h2>🎶 Preview: {{ count }} Songs</h2>
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="spinner">
+      <div class="note">🎵</div>
+    </div>
+    <p style="margin-top:5px;color:#1DB954;font-size:0.9em;">Reshuffling songs...</p>
+  </div>
+
+  <table>
+    <tr><th>Song</th><th>Artist</th></tr>
+    {% for t in tracks %}
+      <tr><td>{{ t.name }}</td><td>{{ t.artists }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <form action="{{ url_for('create_playlist') }}" method="post">
+    <button type="submit" class="save">💾 Save Playlist</button>
+  </form>
+
+  <form id="reshuffleForm" action="{{ url_for('preview') }}" method="post">
+    <input type="hidden" name="size" value="{{ count }}">
+    <button type="submit" class="reshuffle">🔀 Reshuffle</button>
+  </form>
+
+  <p><a href="{{ url_for('index') }}" style="color:#1DB954;">⬅️ Back</a></p>
 </div>
-<form action="{{ url_for('create_playlist') }}" method="post">
-  <button type="submit">Save Playlist</button>
-</form>
-<p style="text-align:center;margin-top:20px;"><a href="{{ url_for('index') }}">Back</a></p>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const reshuffleForm = document.getElementById("reshuffleForm");
+  const loader = document.getElementById("loader");
+  if(reshuffleForm && loader){
+    reshuffleForm.addEventListener("submit", function(){
+      loader.style.display = "flex"; // show spinner while reshuffling
+    });
+  }
+});
+</script>
 </body>
 </html>
 """
@@ -406,10 +479,19 @@ def preview():
     if not songs:
         return "You have no Liked Songs in Spotify."
 
-    if len(songs) < size:
-        selection = songs[:]   # all of them
-    else:
-        selection = random.sample(songs, size)
+    # pick random songs without repeating artists
+unique_by_artist = {}
+for s in songs:
+    artist = s["artist_names"][0] if s["artist_names"] else "Unknown"
+    if artist not in unique_by_artist:
+        unique_by_artist[artist] = s
+
+unique_songs = list(unique_by_artist.values())
+if len(unique_songs) <= size:
+    selection = unique_songs
+else:
+    selection = random.sample(unique_songs, size)
+
 
     # store selected track ids in session (small footprint)
     session["preview_ids"] = [s["id"] for s in selection]
