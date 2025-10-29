@@ -288,7 +288,7 @@ body{
 input[type=text]{
   width:100%;
   padding:10px;
-  padding-right:34px; /* space for the x */
+  padding-right:40px; /* space for circular x */
   font-size:1em;
   border-radius:8px;
   border:none;
@@ -300,9 +300,22 @@ input[type=text]{
   top:50%;
   transform:translateY(-50%);
   cursor:pointer;
-  color:#000;              /* black X as requested */
-  font-size:1.2em;
+  color:#000;
+  font-weight:bold;
+  background:#fff;
+  border:2px solid #000;
+  border-radius:50%;
+  width:22px;
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
   user-select:none;
+}
+.clear-x:hover{
+  background:#000;
+  color:#fff;
 }
 .radio-group{
   display:flex;justify-content:center;gap:20px;margin-bottom:20px;
@@ -361,7 +374,7 @@ button:hover{background-color:#1ed760;}
   <form id="saveForm" action="{{ url_for('confirm_save_playlist') }}" method="post">
     <label for="title">Playlist Title:</label><br>
 
-    <!-- Input with clear (x) button -->
+    <!-- Input with circular clear (x) button -->
     <div class="input-wrap">
       <input type="text" id="title" name="title" value="{{ suggested_title }}" required>
       <span id="clearTitle" class="clear-x" aria-label="Clear title">x</span>
