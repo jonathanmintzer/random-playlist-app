@@ -277,9 +277,32 @@ body{
   background:#121212;color:#fff;text-align:center;margin:0;padding:20px;
 }
 .container{max-width:420px;margin:auto;}
+.input-wrap{
+  position:relative; 
+  display:inline-block; 
+  width:100%; 
+  max-width:420px; 
+  margin-top:10px; 
+  margin-bottom:16px;
+}
 input[type=text]{
-  width:100%;padding:10px;font-size:1em;border-radius:8px;border:none;
-  margin-top:10px;margin-bottom:16px;
+  width:100%;
+  padding:10px;
+  padding-right:34px; /* space for the x */
+  font-size:1em;
+  border-radius:8px;
+  border:none;
+  box-sizing:border-box;
+}
+.clear-x{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+  color:#000;              /* black X as requested */
+  font-size:1.2em;
+  user-select:none;
 }
 .radio-group{
   display:flex;justify-content:center;gap:20px;margin-bottom:20px;
@@ -337,7 +360,12 @@ button:hover{background-color:#1ed760;}
 
   <form id="saveForm" action="{{ url_for('confirm_save_playlist') }}" method="post">
     <label for="title">Playlist Title:</label><br>
-    <input type="text" id="title" name="title" value="{{ suggested_title }}"><br>
+
+    <!-- Input with clear (x) button -->
+    <div class="input-wrap">
+      <input type="text" id="title" name="title" value="{{ suggested_title }}" required>
+      <span id="clearTitle" class="clear-x" aria-label="Clear title">x</span>
+    </div>
 
     <div class="radio-group">
       <label><input type="radio" name="privacy" value="private" checked> Save as Private</label>
@@ -350,11 +378,22 @@ button:hover{background-color:#1ed760;}
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
+  // Show spinner while saving
   const form = document.getElementById("saveForm");
   const loader = document.getElementById("loader");
   if(form && loader){
     form.addEventListener("submit", function(){
-      loader.style.display = "flex"; // show spinner while saving
+      loader.style.display = "flex";
+    });
+  }
+
+  // Clear (x) logic
+  const clearBtn = document.getElementById("clearTitle");
+  const titleInput = document.getElementById("title");
+  if(clearBtn && titleInput){
+    clearBtn.addEventListener("click", function(){
+      titleInput.value = "";
+      titleInput.focus();
     });
   }
 });
